@@ -408,4 +408,12 @@
     <EndTime>2025-07-13T08:50:42</EndTime>
     <Status>SelfCancelled</Status>
   </Assignment>
+  <Assignment>
+    <Id>51</Id>
+    <CallId>18</CallId>
+    <VolunteerId>215042284</VolunteerId>
+    <StartTime>2025-07-13T15:30:42</StartTime>
+    <EndTime xsi:nil="true" />
+    <Status xsi:nil="true" />
+  </Assignment>
 </ArrayOfAssignment>
