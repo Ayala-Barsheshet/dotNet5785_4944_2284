@@ -1,4 +1,6 @@
-﻿using BO;
+﻿using BlApi;
+using BlImplementation;
+using BO;
 using DalApi;
 using DO;
 using System.Text.RegularExpressions;
@@ -9,8 +11,103 @@ namespace Helpers;
 /// </summary>
 internal static class VolunteerManager
 {
-    private static IDal s_dal = Factory.Get; //stage 4
+    private static IDal s_dal = DalApi.Factory.Get; //stage 4
+    private static IBl s_bl = BlApi.Factory.Get();
+    internal static ObserverManager Observers = new(); //stage 5 
 
+
+    private static readonly Random s_rand = new();
+    private static int s_simulatorCounter = 0;
+
+
+    private static int threadIndex = 0;
+    internal static void SimulateVolunteerAssignmentsAndCallHandling()
+    {
+        Thread.CurrentThread.Name = $"Simulator{threadIndex++}";
+
+        List<int> updatedVolunteerIds = new();
+        List<int> updatedCallIds = new();
+
+        List<DO.Volunteer> activeVolunteers;
+        lock (AdminManager.blMutex)
+        {
+            activeVolunteers = DalApi.Factory.Get.Volunteer.ReadAll(v => v.IsActive).ToList();
+        }
+
+        foreach (var volunteer in activeVolunteers)
+        {
+            DO.Assignment? currentAssignment;
+            lock (AdminManager.blMutex)
+            {
+                currentAssignment = DalApi.Factory.Get.Assignment
+                    .ReadAll(a => a.VolunteerId == volunteer.Id && a.EndTime == null)
+                    .FirstOrDefault();
+            }
+
+            if (currentAssignment == null)
+            {
+                List<BO.OpenCallInList> openCalls = s_bl.Call.GetOpenCallsByVolunteer(volunteer.Id, null, null).ToList();
+
+                if (!openCalls.Any() || Random.Shared.NextDouble() > 0.5) continue;
+
+                var selectedCall = openCalls[Random.Shared.Next(openCalls.Count)];
+                try
+                {
+                    s_bl.Call.SelectCallForTreatment(volunteer.Id, selectedCall.Id);
+                    updatedVolunteerIds.Add(volunteer.Id);
+                    updatedCallIds.Add(selectedCall.Id);
+                }
+                catch { continue; }
+            }
+            else
+            {
+                DO.Call? call;
+                lock (AdminManager.blMutex)
+                {
+                    call = DalApi.Factory.Get.Call.Read(c => c.Id == currentAssignment.CallId);
+                }
+
+                if (call is null) continue;
+
+                double distance = Tools.CalculateDistance(volunteer.Latitude!, volunteer.Longitude!, call.Latitude, call.Longitude);
+                TimeSpan baseTime = TimeSpan.FromMinutes(distance * 2);
+                TimeSpan extra = TimeSpan.FromMinutes(Random.Shared.Next(1, 5));
+                TimeSpan totalNeeded = baseTime + extra;
+                TimeSpan? actual = AdminManager.Now - currentAssignment.StartTime;
+
+                double r = Random.Shared.NextDouble();
+                if (r < 0.4)
+                {
+                    try
+                    {
+                        s_bl.Call.CancelCallAssignment(volunteer.Id, currentAssignment.Id);
+                        updatedVolunteerIds.Add(volunteer.Id);
+                        updatedCallIds.Add(call.Id);
+                    }
+                    catch { continue; }
+                }
+                else if (r < 0.8)
+                {
+                    try
+                    {
+                        s_bl.Call.MarkCallAsCompleted(volunteer.Id, currentAssignment.Id);
+                        updatedVolunteerIds.Add(volunteer.Id);
+                        updatedCallIds.Add(call.Id);
+                    }
+                    catch { continue; }
+                }
+
+            }
+        }
+
+        foreach (var id in updatedVolunteerIds.Distinct())
+            VolunteerManager.Observers.NotifyItemUpdated(id);
+
+        foreach (var id in updatedCallIds.Distinct())
+            CallManager.Observers.NotifyItemUpdated(id);
+
+        VolunteerManager.Observers.NotifyListUpdated();
+    }
 
     public static int GetCompletedCallsCount(int volunteerId)
     {
@@ -81,29 +178,88 @@ internal static class VolunteerManager
             throw new BlInvalidInputException("Invalid DistanceType value.");
         }
     }
+
+    public static bool IsSingleManager(int volunteerId, DO.Role selfRole)
+    {
+       IEnumerable<DO.Volunteer> ? volunteers;
+
+        lock (AdminManager.blMutex)
+        {
+            volunteers = s_dal.Volunteer.ReadAll();
+        }
+
+        return volunteers.Count(v => v.Role == DO.Role.Manager) == 1 && selfRole == DO.Role.Manager;
+    }
+
     public static BO.CallInProgress? GetCallInProgress(int volunteerId)
     {
-        var assignments = s_dal.Assignment.ReadAll();
-        var calls = s_dal.Call.ReadAll();
-        if (assignments is null || calls is null) return null;
+        var volunteer = s_dal.Volunteer.Read(volunteerId);
+        var assignments = s_dal.Assignment.ReadAll()?.ToList();
+        var calls = s_dal.Call.ReadAll()?.ToList();
 
-        return assignments
-            .Where(a => a.VolunteerId == volunteerId && a.EndTime == null)
-            .Join(calls, a => a.CallId, c => c.Id, (a, c) => new BO.CallInProgress
+        var openAssignments = assignments
+            .Where(a =>
+                a.VolunteerId == volunteerId &&
+                (a.EndTime == null || a.EndTime == DateTime.MinValue) &&
+                a.Status == null)
+            .ToList();
+
+        if (!openAssignments.Any())
+            return null;
+
+        var assignment = openAssignments.First();
+
+        var call = calls.FirstOrDefault(c => c.Id == assignment.CallId) ?? throw new Exception($"No call found with ID {assignment.CallId}.");
+
+        return new BO.CallInProgress
+        {
+            CallId = call.Id,
+            AssignmentId = assignment.Id,
+            CallType = (BO.CallType)call.CallType,
+            Description = call.Description,
+            FullAddress = call.FullAddress,
+            OpenTime = assignment.StartTime,
+            MaxEndTime = call.MaxEndTime,
+            TreatmentStartTime = assignment.StartTime,
+            DistanceFromVolunteer = Tools.CalculateDistance(volunteer.Latitude, volunteer.Longitude, call.Latitude, call.Longitude),
+            Status = BO.StatusCallInProgress.InProcessing
+        };
+    }
+
+
+    public static string? GetVolunteerFullName(int volunteerId)
+    {
+        return s_dal.Volunteer.Read(volunteerId).FullName;
+    }
+
+    public static void PeriodicVolunteerUpdates(DateTime oldClock, DateTime newClock)
+    {
+        var assignments = s_dal.Assignment.ReadAll() ?? Enumerable.Empty<DO.Assignment>();
+        var udatedAssignments = assignments
+            .Where(a => a.EndTime == null)
+            .ToList();
+
+        var toUpdate = udatedAssignments
+            .Select(a => new { Assignment = a, Call = s_dal.Call.Read(c => c.Id == a.CallId) })
+            .Where(ac => ac.Call.MaxEndTime.HasValue && ac.Call.MaxEndTime <= newClock)
+            .ToList();
+
+        foreach (var ac in toUpdate)
+        {
+            var updatedAssignment = ac.Assignment with
             {
-                CallId = c.Id,
-                AssignmentId = a.Id,
-                CallType = (BO.CallType)c.CallType,
-                Description = c.Description,
-                FullAddress = c.FullAddress,
-                OpenTime = a.StartTime,
-                MaxEndTime = c.MaxEndTime,
-                TreatmentStartTime = a.StartTime,
-                DistanceFromVolunteer = 0,
-                Status = (a.Status == null || a.Status == DO.AssignmentStatus.Completed)
-                    ? BO.StatusCallInProgress.InProcessing
-                    : BO.StatusCallInProgress.InProcessingInRisk
-            })
-            .FirstOrDefault();
+                Status = (DO.AssignmentStatus)BO.AssignmentStatus.Expired,
+                EndTime = newClock
+            };
+
+            lock (AdminManager.blMutex)
+                s_dal.Assignment.Update(updatedAssignment);
+        }
+
+        foreach (var ac in toUpdate.Select(a => a.Assignment))
+            Observers.NotifyItemUpdated(ac.VolunteerId);
+
+        Observers.NotifyListUpdated();
     }
 }
+

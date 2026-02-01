@@ -1,0 +1,61 @@
+﻿<Window x:Class="PL.Volunteer.VolunteerListWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PL.Volunteer"
+        mc:Ignorable="d"
+        Title="VolunteerListWindow" Height="450" Width="800"
+        DataContext="{Binding RelativeSource={RelativeSource Mode=Self}}"
+        Loaded="Window_Loaded" Closed="Window_Closed">
+
+    <!--External Grid-->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40*"/>
+            <RowDefinition Height="500*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <!--Internal, Upper Grid -->
+        <Grid HorizontalAlignment="Stretch" Height="auto" Grid.Row="0" VerticalAlignment="Stretch" Width="auto">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Content="sort volunteers by: " HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <ComboBox SelectedValue="{Binding VolunteerSortOption , Mode=TwoWay}" ItemsSource="{Binding Source={StaticResource VolunteerSortOptionCollectionKey}}"
+              Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="ComboBox_SelectionChanged" />
+        </Grid>
+        <DataGrid Grid.Row="1" Margin="5" ItemsSource="{Binding VolunteerList}" SelectedItem="{Binding SelectedVolunteer}"
+          MouseDoubleClick="dgVolunteerList_MouseDoubleClick" AutoGenerateColumns="False" IsReadOnly="True" RowDetailsVisibilityMode="VisibleWhenSelected">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Id" Binding="{Binding Id}" Width="Auto"/>
+                <DataGridTextColumn Header="Full Name" Binding="{Binding FullName}" Width="Auto"/>
+                <DataGridTextColumn Header="Is Active (text)" Binding="{Binding IsActive}" Width="Auto"/>
+
+                <DataGridTemplateColumn Header="Is Active (checkbox)">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding IsActive}" IsEnabled="False" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Completed Calls" Binding="{Binding AmountOfCompletedCalls}" />
+                <DataGridTextColumn Header="Self Cancelled" Binding="{Binding AmountOfSelfCancelledCalls}" />
+                <DataGridTextColumn Header="Expired" Binding="{Binding AmountOfExpiredCalls}" />
+                <DataGridTextColumn Header="Treatment Id" Binding="{Binding CallInTreatmentId}" />
+                <DataGridTemplateColumn Header="Delete">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="🗑 Delete" Click="DeleteVolunteer_Click"  PreviewMouseDown="Button_PreviewMouseDown" ToolTip="Delete Volunteer"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Button Content="Add Volunteer" Grid.Row="2" HorizontalAlignment="Center" Height="50" Width="100" Click="btnAddVolunteer_Click"/>
+    </Grid>
+
+</Window>

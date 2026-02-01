@@ -3,7 +3,7 @@
 /// <summary>
 /// Public interface methods to be invoked via the view or via BlTest
 /// </summary>
-public interface ICall
+public interface ICall : IObservable
 {
     /// <summary>
     /// Requests the quantities of calls grouped by their status.
@@ -33,7 +33,7 @@ public interface ICall
     /// </summary>
     /// <param name="call">A BO.Call object with updated values.</param>
     /// <exception cref="Exception">Thrown if validation fails.</exception>
-    void UpdateCallDetails(BO.Call call);
+    Task UpdateCallDetails(BO.Call call);
 
     /// <summary>
     /// Requests the deletion of a call.
@@ -47,7 +47,7 @@ public interface ICall
     /// </summary>
     /// <param name="call">A BO.Call object with complete details of the new call.</param>
     /// <exception cref="Exception">Thrown if validation fails or a call with the same ID already exists.</exception>
-    void AddCall(BO.Call call);
+    Task AddCall(BO.Call call);
 
     /// <summary>
     /// Requests a list of closed calls handled by a specific volunteer.
@@ -56,7 +56,7 @@ public interface ICall
     /// <param name="filterType">Filter by a specific field. Nullable.</param>
     /// <param name="sortField">Sort by a specific field. Nullable.</param>
     /// <returns>A collection of closed calls handled by the volunteer.</returns>
-    IEnumerable<BO.ClosedCallInList> GetClosedCallsByVolunteer(int volunteerId, BO.FilterAndSortByFields? filterType, BO.FilterAndSortByFields? sortField);
+    IEnumerable<BO.ClosedCallInList> GetClosedCallsByVolunteer(int volunteerId, BO.FilterAndSortByFields? filterType, object? filterValue, BO.FilterAndSortByFields? sortField);
 
     /// <summary>
     /// Requests a list of open calls available for a specific volunteer to handle.
@@ -67,13 +67,13 @@ public interface ICall
     /// <returns>A collection of open calls available for the volunteer.</returns>
     IEnumerable<BO.OpenCallInList> GetOpenCallsByVolunteer(int volunteerId, BO.FilterAndSortByFields? filterType, BO.FilterAndSortByFields? sortField);
 
-        /// <summary>
-        /// Marks a call as completed by a volunteer.
-        /// </summary>
-        /// <param name="volunteerId">The ID of the volunteer completing the call.</param>
-        /// <param name="assignmentId">The ID of the call assignment.</param>
-        /// <exception cref="Exception">Thrown if the operation fails or the IDs are invalid.</exception>
-        void MarkCallAsCompleted(int volunteerId, int assignmentId);
+    /// <summary>
+    /// Marks a call as completed by a volunteer.
+    /// </summary>
+    /// <param name="volunteerId">The ID of the volunteer completing the call.</param>
+    /// <param name="assignmentId">The ID of the call assignment.</param>
+    /// <exception cref="Exception">Thrown if the operation fails or the IDs are invalid.</exception>
+    void MarkCallAsCompleted(int volunteerId, int assignmentId);
 
     /// <summary>
     /// Cancels a call assignment.
@@ -93,6 +93,13 @@ public interface ICall
     /// has expired, or if any other validation fails.
     /// </exception>
     void SelectCallForTreatment(int volunteerId, int callId);
+
+    /// <summary>
+    /// Returns a list of all assignments for a given call ID.
+    /// </summary>
+    /// <param name="callId">The ID of the call.</param>
+    /// <returns>A collection of assignments related to the call.</returns>
+    IEnumerable<BO.CallAssignInList> GetAssignmentsByCallId(int callId);
 
 }
 

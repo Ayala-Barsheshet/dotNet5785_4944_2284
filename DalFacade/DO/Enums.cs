@@ -6,7 +6,7 @@ public enum AssignmentStatus
     Completed,        
     SelfCancelled,    
     ManagerCancelled, 
-    Expired           
+    Expired
 }
 public enum CallType
 {

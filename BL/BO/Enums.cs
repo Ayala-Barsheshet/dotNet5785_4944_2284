@@ -1,11 +1,12 @@
 ﻿
 namespace BO;
+
 public enum AssignmentStatus
 {
     Completed,
     SelfCancelled,
     ManagerCancelled,
-    Expired
+    Expired,
 }
 public enum CallType
 {
@@ -47,7 +48,8 @@ public enum VolunteerSortOption
 {
     ByName,
     ByCompletedCalls,
-    MaxDistanceForCall
+    MaxDistanceForCall,
+    None
 }
 public enum TimeUnit
 {
@@ -72,6 +74,7 @@ public enum CallInListFields
     RestTimeForCall,
     LastVolunteerName,
     RestTimeForTreatment,
-    Status
+    Status,
+    None
 }
 
