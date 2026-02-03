@@ -79,5 +79,5 @@ Follow these steps to run the project locally:
 Developed as part of the .NET Windows Systems course (2025). This project demonstrates high-level software engineering capabilities, 
 focusing on complex logic, multi-layered design, and real-world simulation challenges.
 
-**Created by Ayala Barsheshet*
+*Created by Ayala Barsheshet*
 
