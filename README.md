@@ -1,12 +1,16 @@
 # Volunteer Management System | C#, .NET
-A comprehensive, enterprise-grade system designed for volunteer organizations to orchestrate emergency and service calls.
+A comprehensive, enterprise-grade system designed for volunteer organizations to orchestrate emergency and service calls.<br>
 The platform bridges the gap between administrators managing logistics and volunteers responding to real-time events in the field.
 
 ## Key Features
 *Sophisticated Call Lifecycle: End-to-end management of service calls with dynamic status tracking (Open, Assigned, Completed, Expired).
+
 *Advanced Simulation Engine: A built-in real-time simulator that advances system time independently of the OS clock, enabling stress-testing of time-sensitive operations.
+
 *Intelligent Automation: Internal timers and logic modules that automatically flag calls as "At Risk" or "Expired" based on predefined organizational thresholds.
+
 *Geo-Location Optimization: Algorithms to calculate distances (Aerial/Walking/Driving) between volunteers and call sites to ensure the fastest response time.
+
 *Robust Audit Trail: Full transparency with history tracking for every call, including assignment changes, cancellations, and handovers.
 
 ## Tech Stack
@@ -23,12 +27,12 @@ Concepts: LINQ, Multi-threading, Asynchronous Programming (Async/Await).
 ## Architecture & Design
 The project strictly adheres to Layered Architecture (3-Tier) principles to ensure high maintainability and scalability:
 1. DAL (Data Access Layer)
-Data Persistence: Managed via XML files and optimized In-Memory collections.
+Data Persistence: Managed via XML files and optimized In-Memory collections.<br>
 Patterns: Implemented using CRUD patterns and generic interfaces for decoupled data handling.
 
 2. BL (Business Logic Layer)
-Core Logic: The "brain" of the system, handling complex validation and business rules.
-Technology: Extensive use of LINQ for data manipulation and Multi-threading for background tasks.
+Core Logic: The "brain" of the system, handling complex validation and business rules.<br>
+Technology: Extensive use of LINQ for data manipulation and Multi-threading for background tasks.<br>
 Design Patterns: Implementation of Singleton and Factory Method for robust object management.
 
 3. PL (Presentation Layer)
@@ -36,7 +40,7 @@ User Experience: Modern Desktop UI built with WPF (Windows Presentation Foundati
 Features: Reactive interface utilizing XAML, Data Binding, and event-driven programming.
 
 ## User Roles & Permissions
-Admin Mode:
+*Admin Mode:
 
 Full system orchestration (Manage volunteers, calls, and entities).
 
@@ -44,7 +48,7 @@ Control over the "System Clock" to simulate time-lapse scenarios.
 
 Access to advanced reporting and system initialization.
 
-Volunteer Mode:
+*Volunteer Mode:
 
 Personalized dashboard based on location and skills.
 
