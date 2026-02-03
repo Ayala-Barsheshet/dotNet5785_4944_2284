@@ -3,15 +3,15 @@ A comprehensive, enterprise-grade system designed for volunteer organizations to
 The platform bridges the gap between administrators managing logistics and volunteers responding to real-time events in the field.
 
 ### Tech Stack
-* Language: C#
+* Language: **C#**
 
-* Framework: .NET 8.0
+* Framework: **.NET 8.0**
 
-* UI Framework: WPF (XAML)
+* UI Framework: **WPF (XAML)**
 
-* Storage: XML, In-Memory Lists
+* Storage: **XML, In-Memory Lists**
 
-* Concepts: LINQ, Multi-threading, Asynchronous Programming (Async/Await).
+* Concepts: **LINQ, Multi-threading, Asynchronous Programming (Async/Await)**
 
 ### Key Features
 
@@ -79,5 +79,5 @@ Follow these steps to run the project locally:
 Developed as part of the .NET Windows Systems course (2025). This project demonstrates high-level software engineering capabilities, 
 focusing on complex logic, multi-layered design, and real-world simulation challenges.
 
-Created by Ayala Barsheshet
+**Created by Ayala Barsheshet*
 
