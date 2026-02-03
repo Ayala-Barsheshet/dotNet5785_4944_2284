@@ -2,6 +2,17 @@
 A comprehensive, enterprise-grade system designed for volunteer organizations to orchestrate emergency and service calls.<br>
 The platform bridges the gap between administrators managing logistics and volunteers responding to real-time events in the field.
 
+### Tech Stack
+* Language: C#
+
+* Framework: .NET 8.0
+
+* UI Framework: WPF (XAML)
+
+* Storage: XML, In-Memory Lists
+
+* Concepts: LINQ, Multi-threading, Asynchronous Programming (Async/Await).
+
 ### Key Features
 
 * Sophisticated Call Lifecycle: End-to-end management of service calls with dynamic status tracking (Open, Assigned, Completed, Expired).
@@ -13,17 +24,6 @@ The platform bridges the gap between administrators managing logistics and volun
 * Geo-Location Optimization: Algorithms to calculate distances (Aerial/Walking/Driving) between volunteers and call sites to ensure the fastest response time.
 
 * Robust Audit Trail: Full transparency with history tracking for every call, including assignment changes, cancellations, and handovers.
-
-### Tech Stack
-Language: C#
-
-Framework: .NET 8.0
-
-UI Framework: WPF (XAML)
-
-Storage: XML, In-Memory Lists
-
-Concepts: LINQ, Multi-threading, Asynchronous Programming (Async/Await).
 
 ### Architecture & Design
 The project strictly adheres to Layered Architecture (3-Tier) principles to ensure high maintainability and scalability:
